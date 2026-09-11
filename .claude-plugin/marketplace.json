@@ -1,0 +1,13 @@
+{
+  "name": "declutter",
+  "owner": { "name": "Teren Bryson", "url": "https://github.com/SomeClown" },
+  "description": "Home of declutter, a safety-first folder cleanup pipeline for Claude Code.",
+  "plugins": [
+    {
+      "name": "declutter",
+      "source": "./",
+      "description": "Probe, survey, plan, review, execute, verify: reorganize a messy folder with moves only, a human-approved TSV plan, and a manifest that proves nothing was lost.",
+      "license": "MIT"
+    }
+  ]
+}
