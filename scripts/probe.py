@@ -30,8 +30,13 @@ def main():
         r["readable"] = True
     except (PermissionError, FileNotFoundError, NotADirectoryError) as e:
         r["readable"] = False
-        r["issues"].append(f"target not readable by this process: {e}. On macOS grant the app Files and Folders access "
-                           f"(System Settings > Privacy & Security) or Full Disk Access, then re-run probe.")
+        r["issues"].append(f"target not readable by this process: {e}. On macOS this is a Files and Folders "
+                           f"(privacy) block. The grant must go to the process macOS holds responsible, which for "
+                           f"Claude Code inside the Claude desktop app is the 'Claude Code' helper "
+                           f"(com.anthropic.claude-code), not 'Claude'. Enable the folder under that row in "
+                           f"System Settings > Privacy & Security > Files and Folders, or clear a remembered "
+                           f"denial so the prompt reappears: tccutil reset SystemPolicy<Folder>Folder "
+                           f"com.anthropic.claude-code. Then re-run probe.")
         entries = []
     r["writable"] = os.access(t, os.W_OK)
     probe_dir = os.path.join(t, f".declutter-probe-{os.getpid()}")
