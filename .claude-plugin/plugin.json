@@ -1,6 +1,6 @@
 {
   "name": "declutter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A safety-first folder cleanup pipeline for Claude Code: deterministic probe, survey, execute, and verify scripts around one planning agent. Nothing is ever deleted; every change is a logged, reversible move gated on a plain TSV plan you approve.",
   "author": {
     "name": "Teren Bryson",
