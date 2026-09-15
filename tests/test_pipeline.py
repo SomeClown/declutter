@@ -78,9 +78,15 @@ def main():
     w(f"{T}/proj/id_rsa",                                 # secret by content
       b"-----BEGIN RSA PRIVATE KEY-----\nAAAA\n-----END RSA PRIVATE KEY-----\n")
     w(f"{T}/Archive/old.txt", b"old")
+    w(f"{T}/1Password Export.1pif/data.1pif",             # password-manager export: flagged by
+      b'{"title":"x","secureContents":{"password":"y"}}')  #   directory name and by content
+    w(f"{T}/Domain Transfer.rtf",                         # EPP codes in prose: flagged by content
+      b"Domain Name\tAuthorization\npacketqueue.net\tAB12CD34\n")
+    w(f"{T}/Consent.txt", b"I give my authorization to the school.")  # must NOT be flagged
     w(f"{T}/Archive/report.pdf", b"different")            # collides with the moved report.pdf
     os.symlink("/nonexistent", f"{T}/dead-link")
     os.makedirs(f"{T}/Photos", exist_ok=True)
+    os.makedirs(f"{T}/Nest", exist_ok=True)                # directory whose move row repeats its own name
 
     # -- Stage 1 and 2: probe, survey --------------------------------------
     run(f"{S}/probe.py", T, "--work", W)
@@ -92,6 +98,9 @@ def main():
 
     secrets = open(f"{W}/secrets.tsv").read()
     assert ".env" in secrets and "proj/id_rsa" in secrets, secrets
+    assert "1Password Export.1pif/data.1pif\tname+dir+content" in secrets, secrets
+    assert "Domain Transfer.rtf\tcontent" in secrets, secrets
+    assert "Consent.txt" not in secrets, secrets
     assert "proj/venv" in open(f"{W}/bloat.tsv").read()
 
     # -- A hand-written mapping standing in for the planner ----------------
@@ -107,11 +116,16 @@ def main():
         f.write("move\tproj\tCode\tproject\n")
         f.write("delete\tdead-link\t\tdead symlink\n")
         f.write("move\tPhotos\tMedia\tempty dir\n")
+        f.write("vault\t1Password Export.1pif\t\tpassword export\n")
+        f.write("vault\tDomain Transfer.rtf\t\tEPP codes\n")
+        f.write("keep\tConsent.txt\t\tnot a secret\n")
+        f.write("move\tNest\tOld/Nest\tnests as Old/Nest/Nest; executor must warn\n")
 
     # -- Rule: a dry run changes nothing -----------------------------------
     before = sorted(os.listdir(T))
-    run(f"{S}/execute.py", "--work", W)
+    r = run(f"{S}/execute.py", "--work", W)
     assert sorted(os.listdir(T)) == before, "dry run changed the tree"
+    assert "WARN" in r.stdout and "Old/Nest/Nest" in r.stdout, "nested-destination warning missing"
 
     # -- Rule: bad rows are rejected before anything runs ------------------
     bad = f"{W}/bad.tsv"

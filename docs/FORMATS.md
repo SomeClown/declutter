@@ -30,7 +30,10 @@ so the human can confirm or rename categories first.
     action    source    destination    reason
 * `action`: `keep`, `move`, `delete`, `vault`
 * `source`: path relative to the target as it exists **before** execution
-* `destination`: for `move`, a directory relative to the target root; created if absent
+* `destination`: for `move`, a directory relative to the target root; created if absent.
+  It is the *parent* the source lands in: `move  Parker  Photos/Family` yields
+  `Photos/Family/Parker`. Writing `Photos/Family/Parker` here yields `Photos/Family/Parker/Parker`,
+  and the dry run prints a `WARN` line for that shape.
 * `reason`: why, in a few words; carried into the log
 
 Rows are applied deepest path first, so `Spork/venv  delete` and `Spork  move  archive/` can coexist:

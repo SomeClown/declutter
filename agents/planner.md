@@ -41,6 +41,8 @@ top-level entry in `toplevel.tsv` except the work directory itself. Rules:
 
 - `keep`: leave in place. Use for things clearly in active use (modified recently, a live git repo).
 - `move`: destination is a directory relative to the target root, using the confirmed taxonomy.
+  It is the parent the source is renamed *into*, so a folder row is `move  Parker  Photos/Family`,
+  never `move  Parker  Photos/Family/Parker` (that nests it as `Photos/Family/Parker/Parker`).
   Group by category and, where dates matter, by year (`Screenshots/2025/`).
 - `delete`: only for exact duplicates (cite the surviving copy in the reason), re-downloadable material
   such as installers and third-party clones with no local changes, dependency directories, build output,

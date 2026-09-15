@@ -55,7 +55,8 @@ If they change it, re-run the dry run before applying.
 
     python3 $PLUGIN/scripts/execute.py --work $WORK --apply
 
-Read `execute.log`. Any `ERROR` or `MISSING` line is reported verbatim. Never re-run with hand edits to
+Read `execute.log`. Any `ERROR`, `MISSING`, or `WARN` line is reported verbatim (a `WARN` on a directory
+move means the destination repeats the folder's own name; fix the row before applying). Never re-run with hand edits to
 the script; fix the mapping and re-apply the remaining rows.
 
 ## Stage 7: verify

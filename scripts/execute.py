@@ -201,6 +201,14 @@ def main():
         name = src.replace("/", "__") if act == "vault" else os.path.basename(src)
         dst = uniq(os.path.join(ddir, name))
 
+        # A directory moved to a destination that ends in its own name lands
+        # as X/X. Planners do this when they name the final folder instead of
+        # its parent. Not an error (it can be intended), but say so loudly.
+        if act == "move" and os.path.isdir(sp) and not os.path.islink(sp) \
+                and os.path.basename(dest.rstrip("/")) == os.path.basename(src):
+            out("WARN destination ends in the source's own name, result nests:",
+                src, "->", os.path.relpath(dst, T))
+
         # Moving a directory into itself would either fail or recurse forever.
         if os.path.realpath(dst).startswith(os.path.realpath(sp) + os.sep):
             out("ERROR destination is inside source:", src, "->", dst)

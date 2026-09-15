@@ -59,7 +59,18 @@ ENV_DIRS = {
 # (Keynote's .key, a public PGP key, a "recovery guide" PDF).
 SECRET_NAME = re.compile(
     r"(^\.env$|^\.env\.|\.pem$|\.key$|\.asc$|\.gpg$|_rsa$|id_ed25519|creds|credential|secret|"
-    r"token|apikey|api_key|passw|\.p12$|\.pfx$|backup.?codes|recovery|\.kdbx$|\.ovpn$)",
+    r"token|apikey|api_key|passw|\.p12$|\.pfx$|backup.?codes|recovery|\.kdbx$|\.ovpn$|"
+    r"\.1pif$|\.opvault$|\.agilekeychain$|\.kdb$|\.paw$|1password|lastpass|dashlane|"
+    r"bitwarden|keepass|transfer.?code|auth.?code)",
+    re.I,
+)
+
+# Password-manager exports usually arrive as a *folder* whose name says what
+# it is (1Password writes "<date>.1pif/data.1pif"), so the file inside looks
+# innocent on its own. Any file under a directory matching this is a candidate.
+SECRET_DIR = re.compile(
+    r"(\.1pif$|\.opvault$|\.agilekeychain$|1password|lastpass|dashlane|bitwarden|keepass|"
+    r"password.?export)",
     re.I,
 )
 
@@ -69,7 +80,16 @@ SECRET_NAME = re.compile(
 SECRET_CONTENT = re.compile(
     rb"(BEGIN (RSA|PGP|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|xox[baprs]-[0-9A-Za-z-]{10,}|"
     rb"ghp_[0-9A-Za-z]{30,}|sk-[0-9A-Za-z]{20,}|consumer_secret\s*=|access_token_secret\s*=|"
-    rb"BEGIN PGP MESSAGE)"
+    rb"BEGIN PGP MESSAGE|"
+    # Password-manager export bodies: 1Password .1pif JSON keys, generic JSON
+    # password fields, and the CSV header LastPass/Bitwarden/Chrome exports use.
+    rb"\"(secureContents|securityLevel)\"\s*:|\"password\"\s*:\s*\"|"
+    rb"(?im:^(url|name|title),(username|login|user),(password))|"
+    # Domain registrar transfer (EPP) authorization codes, which live in
+    # prose notes rather than key files. "authorization" alone is far too
+    # common, so it must appear near "domain" or be the explicit EPP form.
+    rb"(?is:\bdomain\b.{0,300}\bauthori[sz]ation\b|\bauthori[sz]ation\b.{0,300}\bdomain\b)|"
+    rb"(?i:\bepp\s*(key|code)\b|\bauth\s*code\b|transfer\s*(auth|key|code)))"
 )
 
 
@@ -231,6 +251,8 @@ def main():
                 why = []
                 if SECRET_NAME.search(f):
                     why.append("name")
+                if any(SECRET_DIR.search(part) for part in os.path.dirname(rel).split(os.sep)):
+                    why.append("dir")
                 if st.st_size < 1_000_000 and not os.path.islink(p):
                     try:
                         with open(p, "rb") as fh:
